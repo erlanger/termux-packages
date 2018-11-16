@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 07149d027..112bcbf88 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -47,7 +50,7 @@ endif()
+ set(CMAKE_INSTALL_MESSAGE NEVER)
+ 
+ # Installation locations
+-string(TOLOWER ${CMAKE_HOST_SYSTEM_PROCESSOR}-${CMAKE_HOST_SYSTEM_NAME}
++string(TOLOWER ${TERMUX_ARCH}-linux
+        SWIPL_ARCH)
+ 
+ ################
