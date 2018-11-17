@@ -24,18 +24,22 @@ clone_with_git() {
             (>&2 echo "BUG: clone_with_git called with empty SWIPL_SRC")
          fi
 
-         if [ x${SWIPL_SRC=""} = x"master"  ]; then        #use master from github
+         if [ x${SWIPL_SRC=""} = x"master"  ]; then           #use master from github
             local git_src="https://github.com/SWI-Prolog/swipl-devel"
-         elif [ x${SWIPL_SRC=""} = x"local" ]; then        #use local swi-devel dir
+         elif [ x${SWIPL_SRC=""} = x"local" ]; then           #use local swi-devel dir
             local git_src="$TERMUX_PKG_BUILDER_DIR/swipl-devel"
          fi
 
          (>&2 echo "GITSRC= $git_src")
 
          mkdir -p $_CACHED_SRC_DIR
+         if [ -n ${TERMUX_FORCE_BUILD=""} ] && \
+            [ -n ${_CACHED_SRC_DIR=""} ]; then                #delete cache if -f given
+            rm -rf "$_CACHED_SRC_DIR/* $_CACHED_SRC_DIR/.*"
+         fi
+
          pushd $_CACHED_SRC_DIR > /dev/null
-         if [ ! -d .git ] ||
-            [ -n ${TERMUX_FORCE_BUILD=""} ]; then                 #if we have not cloned it
+         if [ ! -d .git ] ; then                              #if we have not cloned it
             if [ x${SWIPL_SRC=""} = x"master"  ]; then        #use master from github
                git clone --shallow-since=Nov-5-2018                  \
                          --shallow-submodules                        \
@@ -45,7 +49,7 @@ clone_with_git() {
             elif [ x${SWIPL_SRC=""} = x"local" ]; then        #use local swi-devel dir
                tar -C $git_src -cf - . | tar -xf -
             fi
-         else                                   #pull if we have cloned it
+         else                                                 #pull if we have cloned it
             git pull > /dev/null
          fi
 
