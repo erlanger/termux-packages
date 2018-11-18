@@ -24,29 +24,29 @@ clone_with_git() {
             (>&2 echo "BUG: clone_with_git called with empty SWIPL_SRC")
          fi
 
-         if [ x${SWIPL_SRC=""} = x"master"  ]; then           #use master from github
+         if [ x${SWIPL_SRC=} = x"master"  ]; then           #use master from github
             local git_src="https://github.com/SWI-Prolog/swipl-devel"
-         elif [ x${SWIPL_SRC=""} = x"local" ]; then           #use local swi-devel dir
+         elif [ x${SWIPL_SRC=} = x"local" ]; then           #use local swi-devel dir
             local git_src="$TERMUX_PKG_BUILDER_DIR/swipl-devel"
          fi
 
          (>&2 echo "GITSRC= $git_src")
 
-         mkdir -p $_CACHED_SRC_DIR
          if [ -n ${TERMUX_FORCE_BUILD=""} ] && \
             [ -n ${_CACHED_SRC_DIR=""} ]; then                #delete cache if -f given
-            rm -rf "$_CACHED_SRC_DIR/* $_CACHED_SRC_DIR/.*"
+            rm -rf $_CACHED_SRC_DIR
          fi
 
+         mkdir -p $_CACHED_SRC_DIR
          pushd $_CACHED_SRC_DIR > /dev/null
          if [ ! -d .git ] ; then                              #if we have not cloned it
-            if [ x${SWIPL_SRC=""} = x"master"  ]; then        #use master from github
+            if [ x${SWIPL_SRC=} = x"master"  ]; then        #use master from github
                git clone --shallow-since=Nov-5-2018                  \
                          --shallow-submodules                        \
                          $git_src                                    \
                          . > /dev/null
                git submodule update --init > /dev/null
-            elif [ x${SWIPL_SRC=""} = x"local" ]; then        #use local swi-devel dir
+            elif [ x${SWIPL_SRC=} = x"local" ]; then        #use local swi-devel dir
                tar -C $git_src -cf - . | tar -xf -
             fi
          else                                                 #pull if we have cloned it
@@ -65,7 +65,8 @@ clone_with_git() {
 TERMUX_PKG_HOMEPAGE=https://swi-prolog.org/
 TERMUX_PKG_DESCRIPTION="Most popular and complete prolog implementation"
 
-if [ x${SWIPL_SRC=""} = x"master" ]  || [ x${SWIPL_SRC=""} = x"local" ]; then        #use master branch
+if [ x${SWIPL_SRC=} = x"master" ]  || \
+   [ x${SWIPL_SRC=} = x"local" ]; then        #use master branch
    _CACHED_SRC_DIR="${TERMUX_PKG_CACHEDIR}/swi-prolog.$SWIPL_SRC"
    TERMUX_PKG_VERSION=`clone_with_git`
 else                                           #use latest release (manual)
@@ -92,10 +93,14 @@ TERMUX_PKG_HOSTBUILD=true
                            #          Prepare sources             #
                            ########################################
 
-if [ -n "$SWIPL_SRC" ]; then
+if [ x${SWIPL_SRC=} = x"master" ]  || \
+   [ x${SWIPL_SRC=} = x"local" ]; then
+   (>&2 echo "----------------> BUILDING from GIT: $SWIPL_SRC" )
    termux_step_extract_package() {
          mkdir -p "$TERMUX_PKG_SRCDIR"
+         set +u
          pushd "$_CACHED_SRC_DIR"
+         set -u
 
          # Now copy the files to the SRCDIR
          # The files came from clone_with_git() which is 
@@ -142,9 +147,9 @@ termux_step_host_build () {
 }
 
 termux_step_pre_configure () {
-        #(cd "$TERMUX_PKG_BUILDDIR" && \
-           #git submodule update --init > /dev/null)
-        git submodule update --init
+        if [ -d .git ]; then
+           git submodule update --init
+        fi
 }
 
 
