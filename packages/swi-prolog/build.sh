@@ -34,7 +34,8 @@ clone_with_git() {
 
          if [ -n ${TERMUX_FORCE_BUILD=""} ] && \
             [ -n ${_CACHED_SRC_DIR=""} ]; then                #delete cache if -f given
-            rm -rf $_CACHED_SRC_DIR
+            rm -rf "$_CACHED_SRC_DIR"
+            rm -rf "$TERMUX_PKG_SRCDIR"
          fi
 
          mkdir -p $_CACHED_SRC_DIR
