@@ -21,7 +21,7 @@
 #                 [1]	/home/builder/.termux-build/swi-prolog/src/src/CMakeLists.txt
 
 set( ALIGNOF_INT64_T 
-     "0"
+     "8"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
 
@@ -39,7 +39,7 @@ set( ALIGNOF_INT64_T
 #                 [1]	/home/builder/.termux-build/swi-prolog/src/src/CMakeLists.txt
 
 set( ALIGNOF_DOUBLE 
-     "0"
+     "4"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
 
@@ -57,6 +57,6 @@ set( ALIGNOF_DOUBLE
 #                 [1]	/home/builder/.termux-build/swi-prolog/src/src/CMakeLists.txt
 
 set( ALIGNOF_VOIDP 
-     "0"
+     "4"
      CACHE STRING "Result from TRY_RUN" FORCE)
 
