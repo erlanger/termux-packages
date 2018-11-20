@@ -68,6 +68,7 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 -DTERMUX_ARCH=${TERMUX_ARCH}
 -DINSTALL_DOCUMENTATION=OFF
 -DUSE_GMP=ON
+-DSWIPL_NATIVE_FRIEND=${TERMUX_PKG_HOSTBUILD_DIR}
 -C${TERMUX_PKG_BUILDER_DIR}/TryRunResults.cmake"
 #-DCMAKE_CROSSCOMPILING_EMULATOR=qemu-arm-static"
 
@@ -102,6 +103,9 @@ fi
 # We do this to produce:
 # a native host build to produce
 # boot<nn>.prc, INDEX.pl, ssl cetificate tests,
+# SWIPL_NATIVE_FRIEND tells SWI-Prolog to use 
+# this build for the artifacts needed to build the
+# Android version
 termux_step_host_build () {
         termux_setup_ninja
         termux_setup_cmake
@@ -122,40 +126,24 @@ termux_step_host_build () {
            -DINSTALL_DOCUMENTATION=OFF                       \
            -DSWIPL_PACKAGES=OFF                              \
            -DGMP=OFF                                         \
-           -DSWIPL_NATIVE_FRIEND=${TERMUX_PKG_HOSTBUILD_DIR} \
            -DBUILD_TESTING=ON                                \
            -DSWIPL_SHARED_LIB=OFF
         ninja
-           #-DPROG_OPENSSL=                                   \
+
         unset LDFLAGS
         unset CFLAGS
         unset CXXFLAGS
 }
 
 termux_step_pre_configure () {
-        if [ -d .git ]; then
+        # Download submodules only if we are using git
+        # and not local files
+        if [ -d .git ] && \
+           [ x${SWIPL_SRC=} != x"local" ]; then
            git submodule update --init
         fi
 }
 
-
-                           ########################################
-                           #     Put prebuilt defatom, mkvmi      #
-                           #     and swipl in a usable place      #
-                           ########################################
-termux_step_post_configure () {
-        #cp $TERMUX_PKG_HOSTBUILD_DIR/src/defatom $TERMUX_PKG_BUILDDIR/src/defatom-host
-        #cp $TERMUX_PKG_HOSTBUILD_DIR/src/mkvmi   $TERMUX_PKG_BUILDDIR/src/mkvmi-host
-
-        #fIXME: where should we put this?
-        sudo sh -c "cat <<\EOD > /usr/local/bin/swipl
-#!/bin/sh
-
-$TERMUX_PKG_HOSTBUILD_DIR/src/swipl \"\$@\" 
-#cd $TERMUX_PKG_HOSTBUILD_DIR/src
-EOD"
-        sudo chmod a+x /usr/local/bin/swipl
-}
 
 
                            ########################################
@@ -180,9 +168,6 @@ termux_step_post_make_install () {
            _mk_test_script
 
         fi
-
-        #FIXME: Is there a better way to do this?
-        sudo rm /usr/local/bin/swipl 
 
 }
 
