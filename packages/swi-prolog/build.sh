@@ -1,6 +1,6 @@
 
                            ########################################
-                           #          Set variables               #
+                           #          For development             #
                            ########################################
 
 # Executed by TERMUX_PKG_VERSION, don't call it otherwise
@@ -48,6 +48,9 @@ clone_with_git() {
 }
 
 
+                           ########################################
+                           #          Set variables               #
+                           ########################################
 TERMUX_PKG_HOMEPAGE=https://swi-prolog.org/
 TERMUX_PKG_DESCRIPTION="Most popular and complete prolog implementation"
 
@@ -55,6 +58,7 @@ if [ x${SWIPL_SRC=} = x"master" ]  || \
    [ x${SWIPL_SRC=} = x"local" ]; then        #use master branch
    _CACHED_SRC_DIR="${TERMUX_PKG_CACHEDIR}/swi-prolog.$SWIPL_SRC"
    TERMUX_PKG_VERSION=`clone_with_git`
+   TERMUX_PKG_EXTRA_CONFIGURE_ARGS="-DINSTALL_TESTS=ON -DBUILD_TESTING=ON "
 else                                           #use latest release (manual)
    TERMUX_PKG_VERSION=7.7.22
    TERMUX_PKG_REVISION=1
@@ -65,11 +69,19 @@ fi
 TERMUX_PKG_DEPENDS="readline, libgmp, libcrypt, pcre, libarchive, libyaml, libuuid, libjpeg-turbo"
 
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
--DTERMUX_ARCH=${TERMUX_ARCH}
+$TERMUX_PKG_EXTRA_CONFIGURE_ARGS
 -DINSTALL_DOCUMENTATION=OFF
 -DUSE_GMP=ON
 -DSWIPL_NATIVE_FRIEND=${TERMUX_PKG_HOSTBUILD_DIR}
+-DUNIX_SHELL=${TERMUX_PREFIX}/bin/sh
+-DSWIPL_TMP_DIR=${TERMUX_PREFIX}/lib/swipl/tmp
+-DSWIPL_INSTALL_IN_LIB=ON
+-DSWIPL_PACKAGES_BDB=OFF
+-DSWIPL_PACKAGES_ODBC=OFF
+-DSWIPL_PACKAGES_QT=OFF
+-DSWIPL_PACKAGES_X=OFF
 -C${TERMUX_PKG_BUILDER_DIR}/TryRunResults.cmake"
+
 #-DCMAKE_CROSSCOMPILING_EMULATOR=qemu-arm-static"
 
 TERMUX_PKG_FORCE_CMAKE=true
@@ -79,6 +91,7 @@ TERMUX_PKG_HOSTBUILD=true
                            #          Prepare sources             #
                            ########################################
 
+#Needed only for development from git source
 if [ x${SWIPL_SRC=} = x"master" ]  || \
    [ x${SWIPL_SRC=} = x"local" ]; then
    (>&2 echo "----------------> BUILDING from GIT: $SWIPL_SRC" )
@@ -124,7 +137,7 @@ termux_step_host_build () {
         cmake "$TERMUX_PKG_SRCDIR"                           \
            -G "Ninja"                                        \
            -DINSTALL_DOCUMENTATION=OFF                       \
-           -DSWIPL_PACKAGES=OFF                              \
+           -DSWIPL_PACKAGES=ON                               \
            -DGMP=OFF                                         \
            -DBUILD_TESTING=ON                                \
            -DSWIPL_SHARED_LIB=OFF
@@ -135,6 +148,7 @@ termux_step_host_build () {
         unset CXXFLAGS
 }
 
+#For development from git source
 termux_step_pre_configure () {
         # Download submodules only if we are using git
         # and not local files
@@ -152,45 +166,19 @@ termux_step_pre_configure () {
                            ########################################
 #Executed after make install
 termux_step_post_make_install () {
-        # Put libswipl.so in the directory contained in Termux's 
-        # LD_LIBRARY_PATH
-        mv $TERMUX_PREFIX/lib/swipl/lib/${TERMUX_ARCH}-linux/libswipl.so $TERMUX_PREFIX/lib/
-        #cp $TERMUX_PKG_HOSTBUILD_DIR/home/boot${TERMUX_ARCH_BITS}.prc $TERMUX_PREFIX/lib/swipl
+        mkdir -p ${TERMUX_PREFIX}/lib/swipl/tmp
 
-        # Replace swipl binary with a script that sets
-        # LD_PRELOAD and TMP then runs the binary
-        _mk_swipl_bin
-
+        #For development
         if [ x${SWIPL_SRC=} = x"master" ]  || \
            [ x${SWIPL_SRC=} = x"local" ]; then        #use local files
            SWIPL_HOME=$TERMUX_PREFIX/lib/swipl
-           cp -ar $_CACHED_SRC_DIR/packages $SWIPL_HOME/
+           #cp -ar $_CACHED_SRC_DIR/packages $SWIPL_HOME/
            _mk_test_script
 
         fi
 
 }
 
-_mk_swipl_bin() {
-        #------/usr/bin/swipl script----------------------
-
-        mv $TERMUX_PREFIX/bin/swipl $TERMUX_PREFIX/bin/swipl-bin
-        sh -c "cat <<\EOD > $TERMUX_PREFIX/bin/swipl
-#!/bin/sh
-
-export TMP="\$HOME/tmp"
-export SHELL="$TERMUX_PREFIX/bin/sh"
-if ! echo "\$LD_PRELOAD" | grep libswipl; then
-   export LD_PRELOAD=\${LD_PRELOAD}:libswipl.so:libm.so:libnativehelper.so
-fi
-if [ ! -d "\$TMP" ]; then
-   mkdir "\$TMP"
-fi
-
-exec $TERMUX_PREFIX/bin/swipl-bin \"\$@\" 
-EOD"
-        chmod a+x $TERMUX_PREFIX/bin/swipl
-}
 
 _mk_test_script() {
    SWIPL_BIN=$TERMUX_PREFIX/bin/swipl-bin
@@ -198,27 +186,60 @@ _mk_test_script() {
 #!/bin/sh
 
    SWIPL_HOME=$SWIPL_HOME 
-   cd $SWIPL_HOME/packages
-   for p in *; do
-      pname=\$(echo "\${p}" | tr '[:upper:]' '[:lower:]')
-      tname=test_\${pname}
-      fname=$SWIPL_HOME/packages/\${p}/\${tname}.pl
-      if [ -d \$p ] && [ -f \${fname} ]; then
-         cd \${p}
-         echo \"------- testing package: \${pname}\"
-         plibrary=\${plibrary}:\${SWIPL_HOME}/\${pname}
-         swipl -p library=\${plibrary} \
-               -f none                \
-               -s \${fname}           \
-               -g "\${tname}"         \
-               -t halt
-         cd -
-      fi
-   done
+   cd $SWIPL_HOME/test
+
+   if [ -z \"\$1\" ]; then
+      swipl -f none test.pl --packages
+   else
+      swipl -f none test.pl \"\$@\"
+   fi
 
 EOD"
    chmod a+x $TERMUX_PREFIX/bin/swipl-test
 }
+
+#_mk_test_script() {
+#   SWIPL_BIN=$TERMUX_PREFIX/bin/swipl-bin
+#   sh -c "cat <<\EOD > $TERMUX_PREFIX/bin/swipl-test
+##!/bin/sh
+
+#   SWIPL_HOME=$SWIPL_HOME 
+#   cd $SWIPL_HOME/packages
+
+#   test_pkg() {
+#      local p="\$1"
+#      local pname=\$(echo "\${p}" | tr '[:upper:]' '[:lower:]')
+#      local tname=test_\${pname}
+#      local fname=$SWIPL_HOME/packages/\${p}/\${tname}.pl
+#      if [ -d \$p ] && [ -f \${fname} ]; then
+#         cd \${p}
+#         echo \"------- testing package: \${pname}\"
+#         plibrary=\${plibrary}:\${SWIPL_HOME}/\${pname}
+#         swipl -p library=\${plibrary} \
+#               -f none                \
+#               -s \${fname}           \
+#               -g "\${tname}"         \
+#               -t halt
+#         cd - > /dev/null
+#      fi
+#   }
+
+#   if [ -z "\$1" ]; then
+#      for p in *; do
+#         test_pkg \${p}
+#      done
+#   else
+#      if [ -d "\$1" ]; then
+#         test_pkg \$1
+#      else
+#         echo \"Package \$1 does not exist.\"
+#         exit 1
+#      fi
+#   fi
+
+#EOD"
+#   chmod a+x $TERMUX_PREFIX/bin/swipl-test
+#}
 
 #Get latest version number when using "master"
 #or file url in the SWIPL_SRC variable
