@@ -66,7 +66,7 @@ else                                           #use latest release (manual)
    TERMUX_PKG_SRCURL=http://www.swi-prolog.org/download/devel/src/swipl-${TERMUX_PKG_VERSION}.tar.gz
 fi
 
-TERMUX_PKG_DEPENDS="readline, libgmp, libcrypt, pcre, libarchive, libyaml, libuuid, libjpeg-turbo"
+TERMUX_PKG_DEPENDS="readline, libgmp, libcrypt, pcre, libarchive, libyaml, ossp-uuid, libjpeg-turbo"
 
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 $TERMUX_PKG_EXTRA_CONFIGURE_ARGS
