@@ -51,6 +51,7 @@ clone_with_git() {
                            ########################################
                            #          Set variables               #
                            ########################################
+_TMP_DIR=${TERMUX_PREFIX}/lib/swipl/tmp
 TERMUX_PKG_HOMEPAGE=https://swi-prolog.org/
 TERMUX_PKG_DESCRIPTION="Most popular and complete prolog implementation"
 
@@ -69,12 +70,13 @@ $TERMUX_PKG_EXTRA_CONFIGURE_ARGS
 -DUSE_GMP=ON
 -DSWIPL_NATIVE_FRIEND=${TERMUX_PKG_HOSTBUILD_DIR}
 -DUNIX_SHELL=${TERMUX_PREFIX}/bin/sh
--DSWIPL_TMP_DIR=${TERMUX_PREFIX}/lib/swipl/tmp
+-DSWIPL_TMP_DIR=${_TMP_DIR}
 -DSWIPL_INSTALL_IN_LIB=ON
 -DSWIPL_PACKAGES_BDB=OFF
 -DSWIPL_PACKAGES_ODBC=OFF
 -DSWIPL_PACKAGES_QT=OFF
 -DSWIPL_PACKAGES_X=OFF
+-DSYSTEM_CACERT_FILENAME=${TERMUX_PREFIX}/etc/tls/cert.pem
 -C${TERMUX_PKG_BUILDER_DIR}/TryRunResults.cmake"
 
 #-DCMAKE_CROSSCOMPILING_EMULATOR=qemu-arm-static"
@@ -161,7 +163,7 @@ termux_step_pre_configure () {
                            ########################################
 #Executed after make install
 termux_step_post_make_install () {
-        mkdir -p ${TERMUX_PREFIX}/lib/swipl/tmp
+        mkdir -p ${_TMP_DIR}
 
         #For development
         if [ x${SWIPL_SRC=} = x"master" ]  || \
