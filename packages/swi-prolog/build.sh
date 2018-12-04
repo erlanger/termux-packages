@@ -1,1 +1,1 @@
-unstable-build.sh
+release-build.sh
