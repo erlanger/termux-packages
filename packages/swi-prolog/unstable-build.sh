@@ -62,7 +62,7 @@ if [ x${SWIPL_SRC=} = x"master" ]  || \
    TERMUX_PKG_EXTRA_CONFIGURE_ARGS="-DINSTALL_TESTS=ON -DBUILD_TESTING=ON "
 fi
 
-TERMUX_PKG_DEPENDS="readline, libgmp, libcrypt, pcre, libarchive, libyaml, ossp-uuid, libjpeg-turbo"
+TERMUX_PKG_DEPENDS="readline, libgmp, libcrypt, pcre, libarchive, libyaml, ossp-uuid, ncurses, libjpeg-turbo"
 
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 $TERMUX_PKG_EXTRA_CONFIGURE_ARGS
