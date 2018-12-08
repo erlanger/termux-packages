@@ -9,7 +9,7 @@ TERMUX_PKG_REVISION=3
 TERMUX_PKG_SHA256="79531c2604fbf32c32b35df4784ea4cf4a0f675ab68b041bf4ff6e50bcd38309"
 TERMUX_PKG_SRCURL=http://www.swi-prolog.org/download/devel/src/swipl-${TERMUX_PKG_VERSION}.tar.gz
 
-TERMUX_PKG_DEPENDS="readline, libgmp, libcrypt, pcre, libarchive, libyaml, libjpeg-turbo, ncurses, ossp-uuid"
+TERMUX_PKG_DEPENDS="readline, libgmp, libcrypt, pcre, libarchive, libyaml, libjpeg-turbo, ncurses, ncurses-ui-libs, ossp-uuid"
 
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 -DINSTALL_DOCUMENTATION=OFF

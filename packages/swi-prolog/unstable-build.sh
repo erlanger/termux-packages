@@ -51,7 +51,7 @@ clone_with_git() {
                            ########################################
                            #          Set variables               #
                            ########################################
-_TMP_DIR=${TERMUX_PREFIX}/lib/swipl/tmp
+_TMP_DIR=${TERMUX_PREFIX}/../../cache
 TERMUX_PKG_HOMEPAGE=https://swi-prolog.org/
 TERMUX_PKG_DESCRIPTION="Most popular and complete prolog implementation"
 
@@ -62,7 +62,7 @@ if [ x${SWIPL_SRC=} = x"master" ]  || \
    TERMUX_PKG_EXTRA_CONFIGURE_ARGS="-DINSTALL_TESTS=ON -DBUILD_TESTING=ON "
 fi
 
-TERMUX_PKG_DEPENDS="readline, libgmp, libcrypt, pcre, libarchive, libyaml, ossp-uuid, ncurses, libjpeg-turbo"
+TERMUX_PKG_DEPENDS="readline, libgmp, libcrypt, pcre, libarchive, libyaml, ossp-uuid, ncurses, ncurses-ui-libs, libjpeg-turbo"
 
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 $TERMUX_PKG_EXTRA_CONFIGURE_ARGS
