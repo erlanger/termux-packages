@@ -4,9 +4,9 @@
 _TMP_DIR=${TERMUX_PREFIX}/../../cache
 TERMUX_PKG_HOMEPAGE=https://swi-prolog.org/
 TERMUX_PKG_DESCRIPTION="Most popular and complete prolog implementation"
-TERMUX_PKG_VERSION=7.7.25
+TERMUX_PKG_VERSION=8.1.0
 TERMUX_PKG_REVISION=1
-TERMUX_PKG_SHA256="33f3770934ca5ec3d1078543afa8e093e9036aa1c45f19e014ee23d011b8f779"
+TERMUX_PKG_SHA256="865a7eb4a0324b0b5b1ae667a2e2630333d4d889b9427a8653a0c265270a1581"
 TERMUX_PKG_SRCURL=http://www.swi-prolog.org/download/devel/src/swipl-${TERMUX_PKG_VERSION}.tar.gz
 
 TERMUX_PKG_DEPENDS="readline, libgmp, libcrypt, pcre, libarchive, libyaml, libjpeg-turbo, ncurses, ncurses-ui-libs, ossp-uuid"
